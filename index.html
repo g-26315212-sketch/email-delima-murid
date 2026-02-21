@@ -1,0 +1,53 @@
+const APPS_SCRIPT_URL = https://script.google.com/macros/s/AKfycbyME_TULjErGs1zblnrlcWgNlWtq2WbP2UdXiip9nGRAKRofmWZt2pcKh1sWfQgwU_u9w/exec; // URL dari Step 2
+
+async function searchEmail() {
+    const icInput = document.getElementById('icNumber');
+    const icNumber = icInput.value.replace(/\D/g, '');
+    const resultDiv = document.getElementById('result');
+    const searchBtn = document.getElementById('searchBtn');
+
+    // Validation
+    if (!icNumber) {
+        resultDiv.className = 'result error';
+        resultDiv.innerHTML = '<div class="error-text">❌ Sila masukkan No. IC</div>';
+        return;
+    }
+
+    if (icNumber.length !== 12) {
+        resultDiv.className = 'result error';
+        resultDiv.innerHTML = '<div class="error-text">❌ No. IC mesti 12 digit</div>';
+        return;
+    }
+
+    // Loading state
+    searchBtn.disabled = true;
+    resultDiv.className = 'result info';
+    resultDiv.innerHTML = '<div class="info-text"><div class="loading">🔄 Mencari...</div></div>';
+
+    try {
+        // Fetch dari Google Sheets
+        const response = await fetch(`${APPS_SCRIPT_URL}?ic=${icNumber}`);
+        const data = await response.json();
+        
+        searchBtn.disabled = false;
+
+        if (data.success) {
+            if (data.success) {
+    resultDiv.className = 'result success';
+    resultDiv.innerHTML = `
+        <div>✅ Email dijumpai!</div>
+        <div style="margin-top: 10px;"><strong>Nama:</strong> ${data.nama}</div>
+        <div style="margin-top: 5px;"><strong>Katalaluan:</strong> ${data.katalaluan}</div>
+        <div class="email-display">${data.email}</div>
+    `;
+}
+        } else {
+            resultDiv.className = 'result error';
+            resultDiv.innerHTML = '<div class="error-text">❌ ' + data.message + '</div>';
+        }
+    } catch (error) {
+        searchBtn.disabled = false;
+        resultDiv.className = 'result error';
+        resultDiv.innerHTML = '<div class="error-text">❌ Ralat sambungan. Cuba lagi.</div>';
+    }
+}
